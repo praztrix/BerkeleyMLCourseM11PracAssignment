@@ -78,11 +78,158 @@ Target variable for our modeling is <b>price</b>
 After our initial exploration and fine-tuning of the business understanding, it is time to construct our final dataset prior to modeling.  Here, we want to make sure to handle any integrity issues and cleaning, the engineering of new features, any transformations that we believe should happen (scaling, logarithms, normalization, etc.), and general preparation for modeling with `sklearn`. 
 
 #### Data Preparation Steps
-
-1. Filter out data before 2004  and copy it to a new DataFrame<br/>
+1. Filter out data before 2004  and copy it to a new DataFrame. Data before 2004 may not be relevant due to different economic conditions.<br/>
 2. Calculate age of the car and add it to the DataFrame
 3. Handle NULL Data <br/>
 4. Drop unwanted columns
 5. Ensure that the target and odometer columns contain non zero values.
 6. Replace null values or missing values with appropirate values for remaining columns.
 7. Analyze  the target variable <b>price</b> and  continuous variables odometer & age to remove outliers.
+8. Feature independence test for categorical variables
+
+#### Manual Feature Selection
+1. Skip fuel as 84% of entries use gas fuelled vehicle
+2. Skip transmission as 78% of the vehicle is automatic.
+3. Skip cylinder as this info can be reasonably deduced from the type of vehicle
+
+Typically,  car buyers look at the <b>combination</b> of manufacturer, condition, type, drive, odometer and the age of the car for making decisions about buying a car. State is also a factor as taxes and  dealer fees are different for different states.
+
+#### Encode categorical features using James Stein Encoding
+
+I am using the James Stein encoder to ensure that the number of features are manageable. Column transformers are used in the Modeling section to use JamesStein encoder to encode categorical variables.
+ 
+
+### Modeling
+
+With your (almost?) final dataset in hand, it is now time to build some models.  Here, you should build a number of different regression models with the price as the target.  In building your models, you should explore different parameters and be sure to cross-validate your findings.
+
+#### Modeling Details
+
+1. Build four models - Linear, Ridge, Lasso and GridCVSearch
+2. Do simple cross validation for polynomial degrees [1,2,3] for Linear, Ridge and Lasso Regressions
+3. Use Root Mean Squared Error as an evaluation metric for all these models. RMSE carries the same unit as the target variable which makes it easy to evaluate these models.
+
+#### Linear Regression:
+
+<b>Evaluation Metric: Root Mean Squared Error </b>
+
+Cross validate Ridge regression across (1,2,3) degrees of polynomial and choose the model with the lease RMSE. 
+
+#### Linear Regression Interpretation
+
+After simple cross validation across polynomial degrees (1,2,3), the model with polynomial degree 1 has the least RMSE score. Cross validation across (1,2,3) degrees of polynomial test is returning the same train and test rmses. This is due to SequenceFeatureSelector selecting the same columns for Linear Regression of all 3 polynomial degrees.
+
+ <b>Evaluation Metric: Best RMSE for test set is 9093.95198 </b>
+
+
+ |    | Features                        |   Coefficients |
+|---:|:--------------------------------|---------------:|
+|  0 | polynomialfeatures__odometer    |       -2976.07 |
+|  1 | polynomialfeatures__age         |       -5659.39 |
+|  2 | jamessteinencoder__manufacturer |        2550.84 |
+|  3 | jamessteinencoder__type         |        3126.88 |
+|  4 | jamessteinencoder__drive        |        2477.95 |
+
+Based on observed coefficients, I see that (manufacturer, type and drive) of the car seems to proportionately affect the price of the car. odometer and age shows a negative relationship which shows that older the car, lesser the price and vice versa.
+
+
+#### Ridge Regression:
+
+<b>Evaluation Metric: Root Mean Squared Error </b>
+
+Cross validate Ridge regression across (1,2,3) degrees of polynomial and choose the model with the lease RMSE. 
+
+### Ridge Regression Interpretation
+
+After simple cross validation across polynomial degrees (1,2,3), the model with polynomial degree 3 has the least RMSE score. <br/>
+
+ <b>Evaluation Metric: Best RMSE for polynomial degree 3 test set is 8876.502631 </b>
+
+|    | Features                           |   Coefficients |
+|---:|:-----------------------------------|---------------:|
+|  0 | polynomialfeatures__odometer       |        238.842 |
+|  1 | polynomialfeatures__age            |     -16562.8   |
+|  2 | polynomialfeatures__odometer^2     |       4182     |
+|  3 | polynomialfeatures__odometer age   |     -15246.7   |
+|  4 | polynomialfeatures__age^2          |      20702     |
+|  5 | polynomialfeatures__odometer^3     |       -137.201 |
+|  6 | polynomialfeatures__odometer^2 age |      -2452.79  |
+|  7 | polynomialfeatures__odometer age^2 |      11378.8   |
+|  8 | polynomialfeatures__age^3          |      -9779.25  |
+|  9 | jamessteinencoder__manufacturer    |       2499.77  |
+| 10 | jamessteinencoder__condition       |        418.028 |
+| 11 | jamessteinencoder__type            |       2934.12  |
+| 12 | jamessteinencoder__drive           |       2472.08  |
+| 13 | jamessteinencoder__state           |       1154.02  |
+
+Based on observed coefficients, I see that (manufacturer, condition, type, drive and state ) of the car positively correlates with the price of the car. Age shows a negative relationship which shows that older the car, lesser the price and vice versa. It is surprising to see that the odometer doesn't have a negative coefficient.
+
+### Lasso Regression:
+
+<b>Evaluation Metric: Root Mean Squared Error </b>
+
+Cross validate Ridge regression across (1,2,3) degrees of polynomial and choose the model with the lease RMSE. 
+
+#### Lasso Regression Interpretation
+
+After simple cross validation across polynomial degrees (1,2,3), model with polynomial degree 3 has the least RMSE score. <br/>
+
+ <b>Evaluation Metric: Best RMSE for polynomial degree 3 test set is 8881.619973   </b>
+
+
+|    | Features                           |   Coefficients |
+|---:|:-----------------------------------|---------------:|
+|  0 | polynomialfeatures__odometer       |      -3540.1   |
+|  1 | polynomialfeatures__age            |     -10693.4   |
+|  2 | polynomialfeatures__odometer^2     |       2343.2   |
+|  3 | polynomialfeatures__odometer age   |      -2151.64  |
+|  4 | polynomialfeatures__age^2          |       3958.17  |
+|  5 | polynomialfeatures__odometer^3     |        190.569 |
+|  6 | polynomialfeatures__odometer^2 age |      -1198.49  |
+|  7 | polynomialfeatures__odometer age^2 |       1891.68  |
+|  8 | polynomialfeatures__age^3          |       1327.9   |
+|  9 | jamessteinencoder__manufacturer    |       2499.81  |
+| 10 | jamessteinencoder__condition       |        413.916 |
+| 11 | jamessteinencoder__type            |       2943.58  |
+| 12 | jamessteinencoder__drive           |       2474.49  |
+| 13 | jamessteinencoder__state           |       1155.83  |
+
+Based on observed coefficients, I see that (manufacturer, condition, type, drive, state ) of the car positively correlates with the price of the car. odometer and age shows a negative relationship which shows that older the car, lesser the price and vice versa.
+
+
+### GridCVSearch 
+
+<b>Evaluation Metric: Root Mean Squared Error.
+
+Use Ridge regression and a polynomial degree of 3 along with 5 fold cross validation. Do hyperparameter selection by iterating over alpha for the ridge regression. 
+
+#### GridCVSearch Interpretation
+
+With GridCVSearch for RidgeRegression, the optimal value for the hyperparameter alpha is 0.1 with the RMSE score of 8913.213270988472 for polynomial degree 3.
+
+GridCVSearch also runs the K-Fold algorithm to find the best test set.
+
+ |    | Features                           |   Coefficients |
+|---:|:-----------------------------------|---------------:|
+|  0 | polynomialfeatures__odometer       |        397.433 |
+|  1 | polynomialfeatures__age            |     -16907.5   |
+|  2 | polynomialfeatures__odometer^2     |       4218.6   |
+|  3 | polynomialfeatures__odometer age   |     -15734.7   |
+|  4 | polynomialfeatures__age^2          |      21588.9   |
+|  5 | polynomialfeatures__odometer^3     |       -145.471 |
+|  6 | polynomialfeatures__odometer^2 age |      -2471.57  |
+|  7 | polynomialfeatures__odometer age^2 |      11710.6   |
+|  8 | polynomialfeatures__age^3          |     -10328.3   |
+|  9 | jamessteinencoder__manufacturer    |       2499.98  |
+| 10 | jamessteinencoder__condition       |        418.259 |
+| 11 | jamessteinencoder__type            |       2933.86  |
+| 12 | jamessteinencoder__drive           |       2471.94  |
+| 13 | jamessteinencoder__state           |       1153.97  |
+
+
+
+
+Based on the coefficients, I see that (manufacturer, condition, type, drive abd state ) of the car positively correlates with the price of the car. Age shows a negative relationship which shows that older the car, lesser the price and vice versa. It is surprising to see that the odometer doesn't have a negative coefficient. The observation are similar to Ridge Regression results without GridCVSearch.
+
+
+
