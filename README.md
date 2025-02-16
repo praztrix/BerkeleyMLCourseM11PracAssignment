@@ -199,7 +199,7 @@ Based on observed coefficients, I see that (manufacturer, condition, type, drive
 
 ### GridCVSearch 
 
-<b>Evaluation Metric: Root Mean Squared Error.
+<b>Evaluation Metric: Root Mean Squared Error.</b>
 
 Use Ridge regression and a polynomial degree of 3 along with 5 fold cross validation. Do hyperparameter selection by iterating over alpha for the ridge regression. 
 
