@@ -232,4 +232,32 @@ GridCVSearch also runs the K-Fold algorithm to find the best test set.
 Based on the coefficients, I see that (manufacturer, condition, type, drive abd state ) of the car positively correlates with the price of the car. Age shows a negative relationship which shows that older the car, lesser the price and vice versa. It is surprising to see that the odometer doesn't have a negative coefficient. The observation are similar to Ridge Regression results without GridCVSearch.
 
 
+Evaluation
+With some modeling accomplished, we aim to reflect on what we identify as a high-quality model and what we are able to learn from this. We should review our business objective and explore how well we can provide meaningful insight into drivers of used car prices. Your goal now is to distill your findings and determine whether the earlier phases need revisitation and adjustment or if you have information of value to bring back to your client.
 
+
+#### Best Model Selection
+
+|    | ModelName         |   RMSEScore |   PolynomialDegree |
+|---:|:------------------|------------:|-------------------:|
+|  0 | LinearRegression  |     9093.95 |                  1 |
+|  1 | RidgeRegression   |     8876.5  |                  3 |
+|  2 | LassoRegression   |     8881.62 |                  3 |
+|  3 | RidgeGridCVSearch |     8913.21 |                  3 |
+
+Based on RMSE scores of test sets, Ridge Regression has the least RMSE value and therefore is the best model.
+
+Manufacturer, condition, type, drive and state of the car influence the car price significantly. Even though the odometer has a positive coefficient, I am skeptical of its positive correlation to the price. This requires further investigation.
+
+I am not sure how to interpret odometer^2, odometer age, etc
+
+
+### Deployment
+
+Now that we've settled on our models and findings, it is time to deliver the information to the client.  You should organize your work as a basic report that details your primary findings.  Keep in mind that your audience is a group of used car dealers interested in fine-tuning their inventory.
+
+#### Findings
+
+Based on our analysis, customers value (manufacturer, condition, type, drive) of the car. State of purchase affects the car price due to different taxation, dealership fees and other state specific fees.
+
+As a future work, I would fine tune models by running  models on a state basis. 
