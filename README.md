@@ -260,4 +260,4 @@ Now that we've settled on our models and findings, it is time to deliver the inf
 
 Based on our analysis, customers value (manufacturer, condition, type, drive) of the car. State of purchase affects the car price due to different taxation, dealership fees and other state specific fees.
 
-As a future work, I would fine tune models by running  models on a state basis. 
+As a future work, I would fine tune models by running  models on a state basis and also explore ways to use categorial variables such as <b>model</b> which has thousands of values.
